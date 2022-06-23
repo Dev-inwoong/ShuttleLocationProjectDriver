@@ -38,9 +38,17 @@ class SendLocationActivity : AppCompatActivity() {
         //getRoot 메소드로 레이아웃 내부의 최상위 위치 뷰의
         // 인스턴스를 활용하여 생성된 뷰를액티비티에 표시
         setContentView(binding.root)
-
+        //   val pm = packageManager
         overridePendingTransition(0, 0)
-
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            shouldShowRequestPermissionRationale(pm.backgroundPermissionOptionLabel.toString())
+        ) {
+            Log.d("서비스","항상허용")
+            val pm = packageManager
+            pm.backgroundPermissionOptionLabel
+        } else {
+            Toast.makeText(this,"퍼미션",Toast.LENGTH_SHORT).show()
+        }*/
         background = Intent(this, ServiceLocation2::class.java)
 
         Log.d("서비스","두번째 액티비티 시작")
