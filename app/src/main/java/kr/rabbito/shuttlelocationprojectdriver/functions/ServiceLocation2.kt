@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.CountDownTimer
 import android.os.IBinder
@@ -23,13 +22,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kr.rabbito.shuttlelocationprojectdriver.MainActivity
 import kr.rabbito.shuttlelocationprojectdriver.data.Location
+import android.content.pm.PackageManager
 
 class ServiceLocation2 : Service() {
     private lateinit var sendJob: Job
     //private lateinit var locationManager : LocationManager
     //private lateinit var loc : LocationListener
     private lateinit var manager: NotificationManager
-    val mid= arrayOf(37.3456, 126.7392)     //운전자가 범위내에 있는지 확인을 위한 중간지점.
+    val mid= arrayOf(37.3326, 126.7337)     //운전자가 범위내에 있는지 확인을 위한 중간지점.
     var result = arrayOf(37.3395, 126.7325) //초기값을 0,0 -> 학교정류장으로 변경.
     private lateinit var timer : CountDownTimer //일정시간 이후 스레드 종료를 위한 타이머객체 변수.
     private lateinit var locCheck : CountDownTimer //처음시작후 5분뒤 작업반경확인을 위한 타이머객체
@@ -77,7 +77,7 @@ class ServiceLocation2 : Service() {
         //서비스 생성주기중 생성될때 실행되는부분.
         super.onCreate()
         Log.d("서비스","서비스 onCreate()")
-
+        //getBackgroundPermissionOptionLabel()
         //여기부터 위치정보 전송
         ref = FirebaseDatabase.getInstance().getReference("Driver")
         val first = getSharedPreferences("basic", Service.MODE_PRIVATE)
@@ -110,7 +110,7 @@ class ServiceLocation2 : Service() {
                     // Update result array with location data
                     result[0]=location.latitude
                     result[1]=location.longitude
-                    Log.d("서비스","callback")
+                    //Log.d("서비스","callback ${location.latitude},${result[0]}")
                     break
                 }
             }
@@ -120,12 +120,13 @@ class ServiceLocation2 : Service() {
         intent.putExtra("data", "service")
 
         //처음 시작 후 5분뒤에 반경 체크하는 타이머
-        locCheck = object : CountDownTimer(1000*60*5,1000*6){
+        locCheck = object : CountDownTimer(1000*60*5,1000*60*5){
             override fun onTick(p0: Long) {
-                if(getDistance(result,mid)>1200) LocalBroadcastManager.getInstance(this@ServiceLocation2).sendBroadcast(intent)
+                Log.d("서비스","5분 ontick")
+                if(getDistance(result,mid)>3700) LocalBroadcastManager.getInstance(this@ServiceLocation2).sendBroadcast(intent)
             }
             override fun onFinish() {
-                Log.d("서비스","타이머종료")
+                Log.d("서비스","5분 타이머종료")
                 onDestroy() //타이머 종료시 서비스 종료시킴
             }
         }.start()
@@ -133,15 +134,17 @@ class ServiceLocation2 : Service() {
         timer = object : CountDownTimer(1000*600*6*8,100000*6){
             override fun onTick(p0: Long) {//주기마다 할일 메소드
                 //범위내에 있는지 체크, 벗어날 시 서비스 종료.
-                if(getDistance(result,mid)>1200) LocalBroadcastManager.getInstance(this@ServiceLocation2).sendBroadcast(intent)
+                if(getDistance(result,mid)>3700) LocalBroadcastManager.getInstance(this@ServiceLocation2).sendBroadcast(intent)
+                Log.d("서비스","메인 onTick")
             }
             override fun onFinish() {//타이머 종료시 할일 메소드
-                Log.d("서비스","타이머종료")
+                Log.d("서비스","메인 타이머종료")
                 onDestroy() //타이머 종료시 서비스 종료시킴
             }
         }.start()
     }
     override fun onBind(intent: Intent): IBinder {
+        Log.d("서비스","onBind()")
         TODO("Return the communication channel to the service.")
     }
 
@@ -217,4 +220,6 @@ class ServiceLocation2 : Service() {
             Looper.getMainLooper())
         Log.d("서비스","startLocationUpdates()")
     }
+
+
 }
