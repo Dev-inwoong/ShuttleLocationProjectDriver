@@ -127,7 +127,7 @@ class ServiceLocation2 : Service() {
             }
             override fun onFinish() {
                 Log.d("서비스","5분 타이머종료")
-                onDestroy() //타이머 종료시 서비스 종료시킴
+                //onDestroy() //타이머 종료시 서비스 종료시킴
             }
         }.start()
         //타이머 객체 시간,주기,할일 설정 -- 8시간(28800초)동안,10분 주기
